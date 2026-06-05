@@ -17,6 +17,7 @@ from api.schemas import (
     TaskStatusResponse, TaskListResponse, TaskProgress,
     ValidationReportResponse, QualityReviewResponse, ReviewDimension,
     PolishRequest, PolishResponse, StyleInfo, StylesResponse,
+    BatchDeleteRequest, BatchDeleteResponse,
 )
 from api.errors import AppError
 from adapter.repository import TaskRepository, ScriptRepository
@@ -374,3 +375,22 @@ def delete_task(task_id: str):
         raise AppError(404, "not_found", "任务不存在")
     TaskRepository.delete(task_id)
     return {"task_id": task_id, "deleted": True}
+
+
+# ── 批量删除 ──────────────────────────────────────
+@router.post("/batch-delete", response_model=BatchDeleteResponse, summary="批量删除任务")
+def batch_delete(request: BatchDeleteRequest):
+    """批量删除多个任务。每删除一个任务，相关的脚本和场景也会级联删除。"""
+    deleted = 0
+    errors = []
+    for task_id in request.task_ids:
+        try:
+            task = TaskRepository.get(task_id)
+            if not task:
+                errors.append(f"任务 {task_id} 不存在")
+                continue
+            TaskRepository.delete(task_id)
+            deleted += 1
+        except Exception as e:
+            errors.append(f"删除 {task_id} 失败: {str(e)}")
+    return BatchDeleteResponse(deleted_count=deleted, errors=errors)
