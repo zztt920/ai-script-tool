@@ -1,0 +1,20 @@
+# ── AI 剧本创作工具 — 开发环境（仅 API，无 Nginx）─────
+# 用法: docker compose up -d --build
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: script-tool-api-dev
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_BASE=${OPENAI_API_BASE:-https://api.openai.com/v1}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o}
+      - SCRIPT_DB_PATH=/app/data/script_tool.db
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+    restart: unless-stopped

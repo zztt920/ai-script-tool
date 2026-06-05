@@ -1,0 +1,242 @@
+/* ── i18n 国际化字典 ────────────────────── */
+const I18N = {
+  zh: {
+    "app.title": "AI 剧本创作工具",
+    "nav.convert": "创作",
+    "nav.tasks": "作品",
+    "nav.styles": "风格指南",
+    "nav.about": "关于",
+    "common.refresh": "刷新",
+    "convert.title": "将故事变为剧本",
+    "convert.subtitle": "把你的小说章节粘贴进来，或上传文件。AI 将自动分析人物、提取场景、构建结构化剧本。",
+    "convert.submit": "开始创作",
+    "convert.inputTitle": "小说章节",
+    "convert.loadDemo": "载入示例",
+    "convert.dropHint": "拖拽文件到此处，或点击选择",
+    "convert.basicInfo": "基本信息",
+    "convert.novelTitle": "原著标题",
+    "convert.author": "原著作者",
+    "convert.aiConfig": "创作配置",
+    "convert.mode": "改编模式",
+    "convert.modeDetail": "精细模式（推荐）— 深度分析，保留细节",
+    "convert.modeFast": "快速模式 — 快速出初稿",
+    "convert.modeHybrid": "混合模式 — AI给框架，人工填充",
+    "convert.style": "风格模板",
+    "convert.styleAuto": "自动推断",
+    "convert.outputLang": "输出语言",
+    "convert.enableReview": "启用 AI 质量审核",
+    "tasks.title": "我的作品",
+    "tasks.filterAll": "全部状态",
+    "tasks.filterPending": "等待中",
+    "tasks.filterProcessing": "处理中",
+    "tasks.filterCompleted": "已完成",
+    "tasks.filterFailed": "失败",
+    "tasks.empty": "暂无作品，前往「创作」页开始",
+    "styles.title": "风格指南",
+    "styles.subtitle": "每种风格对应不同的分幕结构和 AI 分析策略",
+    "about.title": "关于 AI 剧本创作工具",
+    "about.desc": "AI 剧本创作工具是一款面向小说作者的智能改编助手，能将 3 章以上的小说文本自动转换为符合行业规范的结构化剧本（YAML 格式）。",
+    "about.pipeline": "8 阶段转换流水线",
+    "about.pipelineDesc": "：加载 → 分析 → 场景提取 → 润色 → 组装 → 输出 → 校验 → 审核",
+    "about.styles": "10 种风格模板",
+    "about.stylesDesc": "：每种风格有专属的分幕结构和 AI 分析策略",
+    "about.modes": "3 种改编模式",
+    "about.modesDesc": "：快速出稿 / 精细打磨 / 混合协作",
+    "about.review": "6 维度质量审核",
+    "about.reviewDesc": "：人物塑造 / 情节结构 / 对话质量 / 场景设计 / 情感张力 / 商业适配",
+    "about.multiLang": "多语言支持",
+    "about.multiLangDesc": "：界面支持中英文切换，剧本输出可选择中文或英文",
+    "status.pending": "等待中",
+    "status.processing": "处理中",
+    "status.completed": "已完成",
+    "status.failed": "失败",
+    "detail.download": "下载剧本",
+    "detail.viewOnline": "在线查看",
+    "detail.validate": "Schema 校验",
+    "detail.polish": "去 AI 味润色",
+    "detail.review": "质量审核",
+    "detail.delete": "删除",
+    "detail.close": "关闭",
+    "reader.prev": "上一页",
+    "reader.next": "下一页",
+    "reader.close": "关闭",
+    "toast.submitted": "任务已提交，正在后台处理...",
+    "toast.deleted": "任务已删除",
+    "toast.error": "操作失败",
+    "toast.copied": "已复制到剪贴板",
+    "notify.taskComplete": "剧本创作完成！",
+    "notify.taskFailed": "任务失败",
+    "notify.taskSubmitted": "任务已提交，可在「我的作品」查看进度",
+    "demo.loaded": "示例内容已加载（古装悬疑风格）",
+    "demo.title1": "长安夜雨",
+    "demo.title2": "迷雾重重",
+    "demo.title3": "暗流涌动",
+    // 风格标签
+    "style.label.悬疑": "悬疑", "style.label.甜宠": "甜宠", "style.label.热血": "热血",
+    "style.label.沙雕": "沙雕", "style.label.都市": "都市", "style.label.古装": "古装",
+    "style.label.仙侠": "仙侠", "style.label.科幻": "科幻", "style.label.惊悚": "惊悚",
+    "style.label.自动": "自动推断",
+    // 风格描述
+    "style.desc.悬疑": "反转钩子、追剧欲望、层层剥开真相",
+    "style.desc.甜宠": "恋爱甜度、心动瞬间、双向奔赴",
+    "style.desc.热血": "燃点密集、逆袭爽感、战力突破",
+    "style.desc.沙雕": "搞笑搞怪、神转折、反差萌",
+    "style.desc.都市": "现实题材、职场生态、情感共鸣",
+    "style.desc.古装": "权谋宫斗、古典韵味、身份等级",
+    "style.desc.仙侠": "修仙体系、宏大世界观、境界突破",
+    "style.desc.科幻": "未来设定、科技反思、人性冲突",
+    "style.desc.惊悚": "氛围营造、心理恐惧、逐步崩溃",
+    "style.desc.自动": "由 AI 自动从原文推断最合适的风格",
+    // 分幕标题
+    "style.act.悬疑.0": "谜面",  "style.act.悬疑.1": "误导",  "style.act.悬疑.2": "追查",  "style.act.悬疑.3": "反转",  "style.act.悬疑.4": "真相",
+    "style.act.甜宠.0": "邂逅",  "style.act.甜宠.1": "试探",  "style.act.甜宠.2": "考验",  "style.act.甜宠.3": "奔赴",
+    "style.act.热血.0": "觉醒",  "style.act.热血.1": "闯关",  "style.act.热血.2": "逆袭",  "style.act.热血.3": "封神",
+    "style.act.沙雕.0": "离谱开局", "style.act.沙雕.1": "越搞越糟", "style.act.沙雕.2": "神转折",  "style.act.沙雕.3": "圆满收场",
+    "style.act.都市.0": "困局",  "style.act.都市.1": "挣扎",  "style.act.都市.2": "抉择",  "style.act.都市.3": "破局",
+    "style.act.古装.0": "入局",  "style.act.古装.1": "博弈",  "style.act.古装.2": "翻覆",  "style.act.古装.3": "定鼎",
+    "style.act.仙侠.0": "入门",  "style.act.仙侠.1": "筑基",  "style.act.仙侠.2": "渡劫",  "style.act.仙侠.3": "飞升",  "style.act.仙侠.4": "开天",
+    "style.act.科幻.0": "发现",  "style.act.科幻.1": "探索",  "style.act.科幻.2": "危机",  "style.act.科幻.3": "重生",
+    "style.act.惊悚.0": "征兆",  "style.act.惊悚.1": "升级",  "style.act.惊悚.2": "崩溃",  "style.act.惊悚.3": "余悸",
+    "style.act.自动.0": "AI 动态分析",
+    "demo.text1": "长安城的夜雨下得又急又密。苏慕提着药箱，穿过朱雀大街，靴子踩在青石板上溅起水花。她抬头望了一眼皇城的方向，那里灯火通明，而她要去的永宁坊早已漆黑一片。\n\n\"苏大夫，这边！\"巷口有人低声唤她。苏慕加快脚步，跟着那人拐进一条窄巷。巷子尽头是一间不起眼的小院，推开木门，血腥味扑面而来。",
+    "demo.text2": "\"人怎么样了？\"苏慕快步走进内室，榻上躺着一名年轻男子，面色苍白，胸口缠着的白布已被血浸透。身旁坐着一名穿月白锦袍的中年人，腰间悬着一枚青色玉佩，极是醒目。\n\n\"失血过多，但命保住了。\"苏慕搭脉片刻后说。她正要解开伤者衣襟检查伤口，目光落在伤者左手虎口处的疤痕上——那是个十字形烙印。她的手指僵了僵。",
+    "demo.text3": "\"你认识他？\"中年人敏锐地捕捉到她一刹那的迟疑。\n\n\"不。\"苏慕垂下眼，继续手上的动作。\n\n\"他是镖局的，昨夜押镖出城遇袭，镖物丢了，人也被伤成这样。\"中年人淡淡地说，\"听说那批镖是送往洛阳如意坊的。\"\n\n苏慕的手微微一顿。如意坊——那是京城最大的地下情报交易场所。",
+  },
+  en: {
+    "app.title": "AI Script Writer",
+    "nav.convert": "Create",
+    "nav.tasks": "Works",
+    "nav.styles": "Styles Guide",
+    "nav.about": "About",
+    "common.refresh": "Refresh",
+    "convert.title": "Turn Stories Into Scripts",
+    "convert.subtitle": "Paste your novel chapters or upload files. AI analyzes characters, extracts scenes, and builds structured scripts.",
+    "convert.submit": "Start Creating",
+    "convert.inputTitle": "Novel Chapters",
+    "convert.loadDemo": "Load Sample",
+    "convert.dropHint": "Drag files here or click to select",
+    "convert.basicInfo": "Basic Info",
+    "convert.novelTitle": "Novel Title",
+    "convert.author": "Author",
+    "convert.aiConfig": "Creative Settings",
+    "convert.mode": "Adaptation Mode",
+    "convert.modeDetail": "Detail (Recommended) — Deep analysis, preserve details",
+    "convert.modeFast": "Fast — Quick draft generation",
+    "convert.modeHybrid": "Hybrid — AI provides framework, you fill details",
+    "convert.style": "Style Template",
+    "convert.styleAuto": "Auto-detect",
+    "convert.outputLang": "Output Language",
+    "convert.enableReview": "Enable AI Quality Review",
+    "tasks.title": "My Works",
+    "tasks.filterAll": "All Statuses",
+    "tasks.filterPending": "Pending",
+    "tasks.filterProcessing": "Processing",
+    "tasks.filterCompleted": "Completed",
+    "tasks.filterFailed": "Failed",
+    "tasks.empty": "No works yet. Go to \"Create\" to start.",
+    "styles.title": "Style Guide",
+    "styles.subtitle": "Each style has a unique act structure and AI analysis strategy",
+    "about.title": "About AI Script Tool",
+    "about.desc": "AI Script Tool is an intelligent adaptation assistant for novel authors, automatically converting 3+ novel chapters into industry-standard structured scripts.",
+    "about.pipeline": "8-Stage Pipeline",
+    "about.pipelineDesc": ": Load → Analyze → Extract → Polish → Build → Output → Validate → Review",
+    "about.styles": "10 Style Templates",
+    "about.stylesDesc": ": Each with dedicated act structure and AI analysis strategy",
+    "about.modes": "3 Adaptation Modes",
+    "about.modesDesc": ": Fast draft / Detailed polish / Hybrid collaboration",
+    "about.review": "6-Dimension Quality Review",
+    "about.reviewDesc": ": Characters / Structure / Dialogue / Scenes / Emotion / Market fit",
+    "about.multiLang": "Multi-Language",
+    "about.multiLangDesc": ": UI supports EN/ZH switching, script output in either language",
+    "status.pending": "Pending",
+    "status.processing": "Processing",
+    "status.completed": "Completed",
+    "status.failed": "Failed",
+    "detail.download": "Download Script",
+    "detail.viewOnline": "View Online",
+    "detail.validate": "Validate Schema",
+    "detail.polish": "De-AI Polish",
+    "detail.review": "Quality Review",
+    "detail.delete": "Delete",
+    "detail.close": "Close",
+    "reader.prev": "Prev",
+    "reader.next": "Next",
+    "reader.close": "Close",
+    "toast.submitted": "Task submitted, processing in background...",
+    "toast.deleted": "Task deleted",
+    "toast.error": "Operation failed",
+    "toast.copied": "Copied to clipboard",
+    "notify.taskComplete": "Script creation completed!",
+    "notify.taskFailed": "Task failed",
+    "notify.taskSubmitted": "Task submitted. Check progress in \"Works\" page",
+    "demo.loaded": "Sample loaded (mystery/suspense style)",
+    "demo.title1": "Night Rain in Chang'an",
+    "demo.title2": "The Fog Thickens",
+    "demo.title3": "Undercurrents",
+    // Style labels
+    "style.label.悬疑": "Suspense", "style.label.甜宠": "Romance", "style.label.热血": "Action",
+    "style.label.沙雕": "Comedy", "style.label.都市": "Urban", "style.label.古装": "Historical",
+    "style.label.仙侠": "Xianxia", "style.label.科幻": "Sci-Fi", "style.label.惊悚": "Horror",
+    "style.label.自动": "Auto-detect",
+    // Style descriptions
+    "style.desc.悬疑": "Plot twists, cliffhangers, layer-by-layer reveals",
+    "style.desc.甜宠": "Sweet romance, heart-fluttering moments, mutual devotion",
+    "style.desc.热血": "Intense action, comeback thrill, power breakthroughs",
+    "style.desc.沙雕": "Hilarious comedy, unexpected twists, character contrasts",
+    "style.desc.都市": "Realistic drama, workplace dynamics, emotional resonance",
+    "style.desc.古装": "Political intrigue, palace schemes, classical elegance",
+    "style.desc.仙侠": "Cultivation systems, grand world-building, realm breakthroughs",
+    "style.desc.科幻": "Futuristic settings, tech dilemmas, humanity conflicts",
+    "style.desc.惊悚": "Atmospheric horror, psychological fear, gradual collapse",
+    "style.desc.自动": "AI auto-infers the best style from the source text",
+    // Act titles
+    "style.act.悬疑.0": "The Mystery", "style.act.悬疑.1": "Misdirection", "style.act.悬疑.2": "The Hunt", "style.act.悬疑.3": "The Twist", "style.act.悬疑.4": "The Truth",
+    "style.act.甜宠.0": "First Encounter", "style.act.甜宠.1": "Testing Waters", "style.act.甜宠.2": "Trial", "style.act.甜宠.3": "Together",
+    "style.act.热血.0": "Awakening", "style.act.热血.1": "Trials", "style.act.热血.2": "Comeback", "style.act.热血.3": "Ascension",
+    "style.act.沙雕.0": "Absurd Start", "style.act.沙雕.1": "Going Wrong", "style.act.沙雕.2": "Plot Twist", "style.act.沙雕.3": "Happy Ending",
+    "style.act.都市.0": "Predicament", "style.act.都市.1": "Struggle", "style.act.都市.2": "Crossroads", "style.act.都市.3": "Breakthrough",
+    "style.act.古装.0": "Entering the Game", "style.act.古装.1": "The Gambit", "style.act.古装.2": "Upheaval", "style.act.古装.3": "Coronation",
+    "style.act.仙侠.0": "Initiation", "style.act.仙侠.1": "Foundation", "style.act.仙侠.2": "Tribulation", "style.act.仙侠.3": "Ascension", "style.act.仙侠.4": "Genesis",
+    "style.act.科幻.0": "Discovery", "style.act.科幻.1": "Exploration", "style.act.科幻.2": "Crisis", "style.act.科幻.3": "Rebirth",
+    "style.act.惊悚.0": "Omen", "style.act.惊悚.1": "Escalation", "style.act.惊悚.2": "Collapse", "style.act.惊悚.3": "Aftermath",
+    "style.act.自动.0": "AI Dynamic Analysis",
+    "demo.text1": "The night rain over Chang'an fell fast and heavy. Carrying her medicine box, Su Mu crossed Zhuque Avenue, her boots splashing on the bluestone pavement. She glanced toward the imperial palace, ablaze with lights, while Yongning Ward — her destination — was already pitch dark.\n\n\"Doctor Su, this way!\" A voice called from an alleyway. Su Mu quickened her pace, following the figure into a narrow lane. At the end stood an unremarkable courtyard. She pushed open the wooden door, and the smell of blood hit her.",
+    "demo.text2": "\"How is he?\" Su Mu stepped into the inner room. A young man lay on the bed, his face pale, the white cloth wrapped around his chest soaked through with blood. Beside him sat a middle-aged man in a moon-white brocade robe, a cyan jade pendant hanging conspicuously at his waist.\n\n\"He's lost a lot of blood, but he'll live.\" Su Mu said after taking his pulse. As she reached to examine the wound, her gaze fell on the scar at the base of the patient's left thumb — a cross-shaped brand. Her fingers froze.",
+    "demo.text3": "\"You know him?\" The middle-aged man caught her momentary hesitation.\n\n\"No.\" Su Mu lowered her eyes and continued her work.\n\n\"He's from an escort agency. Ambushed last night while escorting cargo out of the city. Lost the shipment and ended up like this.\" The man spoke casually. \"I heard the cargo was headed to Ruyi Pavilion in Luoyang.\"\n\nSu Mu's hand paused. Ruyi Pavilion — the largest underground intelligence exchange in the capital.",
+  }
+};
+
+/* ── 切换语言 ────────────────────────────── */
+function setLanguage(lang) {
+  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+  localStorage.setItem('ui-lang', lang);
+  document.getElementById('lang-switch').value = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const text = I18N[lang] && I18N[lang][key];
+    if (text !== undefined) el.textContent = text;
+  });
+  // 更新 placeholder
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    const text = I18N[lang] && I18N[lang][key];
+    if (text !== undefined) el.placeholder = text;
+  });
+  // 如果风格页当前可见，刷新风格卡片
+  var stylePage = document.getElementById('page-styles');
+  if (stylePage && stylePage.classList.contains('active')) {
+    loadStyles();
+  }
+}
+
+function t(key) {
+  const lang = localStorage.getItem('ui-lang') || 'zh';
+  return (I18N[lang] && I18N[lang][key]) || key;
+}
+
+// 初始化语言
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('ui-lang') || 'zh';
+  setLanguage(saved);
+  document.getElementById('lang-switch').addEventListener('change', e => setLanguage(e.target.value));
+});

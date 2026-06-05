@@ -1,0 +1,37 @@
+# 故意包含各种错误的剧本 YAML — 用于测试校验器
+
+meta:
+  # 缺少 script_title、synopsis 等必填字段
+  original_novel: ""
+  original_author: ""
+  adapter: "test"
+  script_version: "abc"   # 非语义化版本
+  created_at: "昨天"
+  updated_at: "昨天"
+  genre: []              # 空列表
+  script_type: "novel"   # 非法枚举
+  total_scenes: 2
+
+characters:
+  - character_id: "CHAR_001"
+    name: "测试角色"
+    # 缺少 personality_traits, background, motivation, arc_summary
+    role_type: "龙套"     # 非法枚举
+
+scenes:
+  - scene_id: 1
+    scene_heading:
+      interior_exterior: "室内"   # 非法枚举
+      # 缺少 location
+      time: "中午"                # 非法枚举
+    # 缺少 summary, scene_function, emotional_tone, characters_present, beats
+    source_reference: "字符串而非字典"   # 类型错误
+
+  - scene_id: 1   # 重复 ID
+
+acts:
+  - act_number: 1
+    title: "测试幕"
+    scene_range:
+      start: 5     # > 场景总数
+      end: 1       # start > end

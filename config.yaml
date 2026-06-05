@@ -1,0 +1,21 @@
+# AI 剧本创作工具 — 配置文件
+# 复制此文件为 config.local.yaml 并填入实际值
+
+# OpenAI 兼容 API 配置
+api_key: ""                          # 或设置环境变量 OPENAI_API_KEY
+api_base: "https://api.openai.com/v1"  # 或使用兼容服务如 DeepSeek / Qwen
+model: "deepseek-v4-flash"                      # 推荐模型（支持 deepseek-v4-pro / deepseek-v4-flash）
+
+# 生成参数
+temperature: 0.3                     # 创造性控制（0-1，越低越稳定）
+max_tokens: 4096                     # 单次最大输出 token
+request_delay: 1.0                   # API 调用间隔（秒），避免限流
+
+# 断点存储
+checkpoint_dir: "./checkpoints"      # 断点目录，用于中断恢复
+
+# 转换参数
+language: "zh"                       # 输出语言: zh(中文) / en(英文)
+mode: "detail"                       # 改编模式: fast(快速) / detail(精细) / hybrid(混合)
+style: "自动"                         # 风格模板: 悬疑/甜宠/热血/沙雕/都市/古装/仙侠/科幻/惊悚/自动
+enable_review: true                  # 是否启用量化质量审核

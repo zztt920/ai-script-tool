@@ -1,0 +1,159 @@
+meta:
+  script_title: "长安风云录（改编剧本）"
+  original_novel: "长安风云录"
+  original_author: "测试作者"
+  adapter: "AI 剧本助手 (deepseek-v4-flash)"
+  script_version: "1.0.0"
+  created_at: "2026-06-05T10:00:00+08:00"
+  updated_at: "2026-06-05T10:00:00+08:00"
+  genre: ["古装", "悬疑"]
+  script_type: tv_series
+  total_scenes: 2
+  total_episodes: 1
+  target_audience: "18-45岁"
+  synopsis: "古代边陲小城，被贬官员沈墨在调查一桩冤案时，意外揭开了一场颠覆朝堂的惊天阴谋。"
+  theme_keywords: ["正义", "权谋", "复仇"]
+  adaptation_notes: "保留原著双线叙事结构，压缩部分描写性文字。"
+
+characters:
+  - character_id: "CHAR_001"
+    name: "沈墨"
+    role_type: "主角"
+    gender: "男"
+    age_range: "30-35"
+    occupation: "通判"
+    personality_traits: ["沉稳", "正直", "果决"]
+    background: "原京城御史，因弹劾宰相被贬至边城。"
+    motivation: "揭露真相，为无辜者洗冤，同时寻找扳倒宰相的机会。"
+    arc_summary: "从隐忍等待时机到主动出击，最终成为扭转朝局的关键人物。"
+    speech_style: "沉稳有力，言简意赅，关键时刻锋芒毕露。"
+    relationships:
+      - target_character_id: "CHAR_002"
+        relation_type: "主仆/心腹"
+        description: "沈七是沈墨最信任的护卫。"
+      - target_character_id: "CHAR_003"
+        relation_type: "求助者"
+        description: "苏婉清向沈墨求助，逐渐产生信任。"
+
+  - character_id: "CHAR_002"
+    name: "沈七"
+    role_type: "配角"
+    gender: "男"
+    age_range: "25-30"
+    occupation: "护卫"
+    personality_traits: ["忠诚", "机敏", "寡言"]
+    background: "沈墨的心腹护卫，跟随沈墨多年。"
+    motivation: "保护沈墨安全，协助查明真相。"
+    arc_summary: "始终忠诚于沈墨，在关键时刻多次救主。"
+    speech_style: "简短直接，请示汇报为主。"
+
+  - character_id: "CHAR_003"
+    name: "苏婉清"
+    role_type: "配角"
+    gender: "女"
+    age_range: "20-25"
+    occupation: "药铺掌柜之女"
+    personality_traits: ["柔弱", "坚韧", "聪慧"]
+    background: "药铺掌柜苏远志之女，父亲蒙冤入狱。"
+    motivation: "救出父亲，洗清冤屈。"
+    arc_summary: "从无助弱女子成长为敢于面对权贵的坚强女性。"
+    speech_style: "轻柔有礼，情绪激动时哽咽。"
+
+acts:
+  - act_number: 1
+    title: "危机降临"
+    description: "沈墨被卷入苏远志冤案，发现背后隐藏的惊天阴谋。"
+    scene_range:
+      start: 1
+      end: 2
+
+scenes:
+  - scene_id: 1
+    episode: 1
+    scene_heading:
+      interior_exterior: "内"
+      location: "沈府书房"
+      time: "夜"
+      time_period: "古代"
+    source_reference:
+      novel_chapter: 1
+      novel_chapter_title: "深夜来客"
+    summary: "苏婉清深夜来访，向沈墨求助，请求为其父苏远志洗冤。"
+    scene_function: "推进主线"
+    emotional_tone: "凝重中带有希望"
+    characters_present: ["CHAR_001", "CHAR_003", "CHAR_002"]
+    props: ["古籍", "灯笼", "褪色字条"]
+    beats:
+      - beat_id: "S1_B1"
+        beat_type: "description"
+        content: "书房内烛火摇曳，沈墨正翻阅古籍，面容沉静。"
+        camera_hint: "中景"
+      - beat_id: "S1_B2"
+        beat_type: "action"
+        character_id: "CHAR_002"
+        content: "沈福提灯入内禀报，沈墨放下书卷。"
+        emotion: "警觉"
+      - beat_id: "S1_B3"
+        beat_type: "dialogue"
+        character_id: "CHAR_003"
+        content: "沈大人，求您救救我父亲！"
+        parenthetical: "(跪地，声音哽咽)"
+        subtext: "这是她最后的希望。"
+        emotion: "绝望"
+      - beat_id: "S1_B4"
+        beat_type: "dialogue"
+        character_id: "CHAR_001"
+        content: "姑娘起来说话。你父亲是？"
+        parenthetical: "(伸手虚扶，语气沉稳)"
+        emotion: "关切"
+      - beat_id: "S1_B5"
+        beat_type: "dialogue"
+        character_id: "CHAR_001"
+        content: "苏姑娘，你先回去。这件事，我会查个明白。"
+        parenthetical: "(转身望向窗外，声音坚定)"
+        subtext: "三年前的誓言，今日便是践行之时。"
+        emotion: "坚定"
+    transition: "切"
+    estimated_duration: "2min"
+
+  - scene_id: 2
+    episode: 1
+    scene_heading:
+      interior_exterior: "内"
+      location: "知府大牢"
+      time: "日"
+      time_period: "古代"
+    source_reference:
+      novel_chapter: 2
+      novel_chapter_title: "大牢探秘"
+    summary: "沈墨探监苏远志，得知冯子安未死的秘密。赵敬堂带兵阻拦，双方针锋相对。"
+    scene_function: "推进主线"
+    emotional_tone: "紧张"
+    characters_present: ["CHAR_001", "CHAR_002"]
+    props: []
+    beats:
+      - beat_id: "S2_B1"
+        beat_type: "description"
+        content: "大牢阴暗潮湿，铁锈与霉味弥漫。苏远志蜷缩在囚室角落。"
+        camera_hint: "全景摇至特写"
+      - beat_id: "S2_B2"
+        beat_type: "dialogue"
+        character_id: "CHAR_001"
+        content: "苏大夫，时间不多——赵敬堂为什么要抓你？"
+        parenthetical: "(蹲下身，压低声音)"
+        emotion: "紧迫"
+      - beat_id: "S2_B3"
+        beat_type: "dialogue"
+        character_id: "CHAR_001"
+        content: "去查冯子安。三年前他应该已经死了。如果他还活着，那朝廷里就有一张我们看不见的网。"
+        parenthetical: "(目露锐利之色)"
+        emotion: "决断"
+    transition: "切"
+    estimated_duration: "3min"
+
+revisions:
+  - version: "1.0.0"
+    timestamp: "2026-06-05T10:00:00+08:00"
+    author: "AI Script Assistant"
+    summary: "初稿：由 AI 自动生成，共 2 个场景。"
+    changed_scenes: [1, 2]

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 剧本创作工具 — 小说转剧本</title>
+<link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-brand" data-i18n="app.title">AI 剧本创作工具</div>
+  <nav class="topbar-nav">
+    <a class="active" data-page="convert" href="#" data-i18n="nav.convert">创作</a>
+    <a data-page="tasks" href="#" data-i18n="nav.tasks">作品</a>
+    <a data-page="styles" href="#" data-i18n="nav.styles">风格</a>
+    <a data-page="about" href="#" data-i18n="nav.about">关于</a>
+  </nav>
+  <div class="topbar-right">
+    <select id="lang-switch" class="lang-pill">
+      <option value="zh">中</option>
+      <option value="en">EN</option>
+    </select>
+  </div>
+</header>
+
+<main>
+
+  <!-- ═══════════ 创作页 ══════════════════════════ -->
+  <section id="page-convert" class="page active">
+
+    <!-- 封面 Hero -->
+    <div class="cover-hero">
+      <div class="cover-label">Novel to Script</div>
+      <h1 data-i18n="convert.title">将故事变为剧本</h1>
+      <p data-i18n="convert.subtitle">把你的小说章节粘贴进来，或上传文件。AI 将自动分析人物、提取场景、构建结构化剧本。</p>
+      <p class="cover-subtitle">支持格式：.txt &middot; .docx &middot; .pdf &middot; 至少 3 章</p>
+    </div>
+
+    <!-- 章节输入 -->
+    <div class="chapter-section">
+      <h3><span class="num">1</span> <span data-i18n="convert.inputTitle">小说章节</span></h3>
+      <div class="toolbar">
+        <button class="btn btn-ghost btn-sm" id="btn-demo" data-i18n="convert.loadDemo">载入示例</button>
+        <button class="btn btn-ghost btn-sm" id="btn-add-chapter">+ 添加章节</button>
+      </div>
+
+      <div class="chapter-blocks" id="chapters-container">
+        <div class="chapter-block" data-idx="0">
+          <button class="btn-remove-chapter" onclick="this.parentElement.remove()">&times;</button>
+          <label>第一章</label>
+          <input class="chapter-title" value=" " placeholder="章节标题">
+          <textarea class="chapter-content" rows="5" placeholder="在此粘贴或输入章节正文..."></textarea>
+        </div>
+        <div class="chapter-block" data-idx="1">
+          <button class="btn-remove-chapter" onclick="this.parentElement.remove()">&times;</button>
+          <label>第二章</label>
+          <input class="chapter-title" value=" " placeholder="章节标题">
+          <textarea class="chapter-content" rows="5" placeholder="在此粘贴或输入章节正文..."></textarea>
+        </div>
+        <div class="chapter-block" data-idx="2">
+          <button class="btn-remove-chapter" onclick="this.parentElement.remove()">&times;</button>
+          <label>第三章</label>
+          <input class="chapter-title" value=" " placeholder="章节标题">
+          <textarea class="chapter-content" rows="5" placeholder="在此粘贴或输入章节正文..."></textarea>
+        </div>
+      </div>
+
+      <!-- 文件上传 -->
+      <div class="upload-zone" id="file-upload-zone">
+        <div class="upload-hint">
+          <span class="upload-icon">&#8593;</span>
+          <span data-i18n="convert.dropHint">拖拽文件到此处，或点击选择</span>
+          <span class="upload-types">.txt / .docx / .pdf</span>
+        </div>
+        <input type="file" id="file-input" multiple accept=".txt,.docx,.pdf" hidden>
+      </div>
+      <div id="file-list" class="file-list"></div>
+    </div>
+
+    <!-- 配置区 -->
+    <div class="config-section">
+      <h3><span class="num">2</span> <span data-i18n="convert.aiConfig">创作配置</span></h3>
+      <div class="config-grid">
+        <div class="config-field">
+          <label data-i18n="convert.novelTitle">原著标题</label>
+          <input id="cfg-title" placeholder="如：长安十二时辰">
+        </div>
+        <div class="config-field">
+          <label data-i18n="convert.author">原著作者</label>
+          <input id="cfg-author" placeholder="如：马伯庸">
+        </div>
+        <div class="config-field">
+          <label data-i18n="convert.mode">改编模式</label>
+          <select id="cfg-mode">
+            <option value="detail" data-i18n="convert.modeDetail">精细模式（推荐）</option>
+            <option value="fast" data-i18n="convert.modeFast">快速模式</option>
+            <option value="hybrid" data-i18n="convert.modeHybrid">混合模式</option>
+          </select>
+        </div>
+        <div class="config-field">
+          <label data-i18n="convert.style">风格模板</label>
+          <select id="cfg-style">
+            <option value="auto" data-i18n="style.label.自动">自动推断</option>
+            <option value="悬疑" data-i18n="style.label.悬疑">悬疑</option>
+            <option value="甜宠" data-i18n="style.label.甜宠">甜宠</option>
+            <option value="热血" data-i18n="style.label.热血">热血</option>
+            <option value="沙雕" data-i18n="style.label.沙雕">沙雕</option>
+            <option value="都市" data-i18n="style.label.都市">都市</option>
+            <option value="古装" data-i18n="style.label.古装">古装</option>
+            <option value="仙侠" data-i18n="style.label.仙侠">仙侠</option>
+            <option value="科幻" data-i18n="style.label.科幻">科幻</option>
+            <option value="惊悚" data-i18n="style.label.惊悚">惊悚</option>
+          </select>
+        </div>
+        <div class="config-field">
+          <label data-i18n="convert.outputLang">输出语言</label>
+          <select id="cfg-lang">
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+      <label class="check-row">
+        <input type="checkbox" id="cfg-review" checked>
+        <span data-i18n="convert.enableReview">启用 AI 质量审核</span>
+      </label>
+      <button class="btn btn-primary btn-full" id="btn-submit" data-i18n="convert.submit">
+        开始创作
+      </button>
+      <div id="convert-status" class="status-msg"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════ 作品页 ══════════════════════════ -->
+  <section id="page-tasks" class="page">
+    <div class="page-head">
+      <h1 data-i18n="tasks.title">我的作品</h1>
+      <div class="task-filter" style="margin-top:14px">
+        <select id="task-status-filter">
+          <option value="" data-i18n="tasks.filterAll">全部状态</option>
+          <option value="pending" data-i18n="tasks.filterPending">等待中</option>
+          <option value="processing" data-i18n="tasks.filterProcessing">处理中</option>
+          <option value="completed" data-i18n="tasks.filterCompleted">已完成</option>
+          <option value="failed" data-i18n="tasks.filterFailed">失败</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" id="btn-refresh-tasks" data-i18n="common.refresh">刷新</button>
+      </div>
+    </div>
+    <table class="task-table">
+      <tbody id="task-tbody"></tbody>
+    </table>
+    <div id="task-empty" class="empty-zone" style="display:none">
+      <div class="empty-icon">&#9998;</div>
+      <p data-i18n="tasks.empty">暂无作品，前往「创作」页开始</p>
+    </div>
+  </section>
+
+  <!-- ═══════════ 详情弹窗 ════════════════════════ -->
+  <div id="task-detail" class="overlay hidden">
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="detail-title">作品详情</h2>
+        <button class="btn-close modal-close">&times;</button>
+      </div>
+      <div class="modal-body" id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 风格页 ══════════════════════════ -->
+  <section id="page-styles" class="page">
+    <div class="page-head">
+      <h1 data-i18n="styles.title">风格指南</h1>
+      <p data-i18n="styles.subtitle">每种风格有专属的分幕结构与 AI 分析策略</p>
+    </div>
+    <div id="style-grid" class="style-grid"></div>
+  </section>
+
+  <!-- ═══════════ 关于页 ══════════════════════════ -->
+  <section id="page-about" class="page">
+    <div class="page-head">
+      <h1 data-i18n="about.title">关于</h1>
+    </div>
+    <div class="about-section">
+      <p data-i18n="about.desc">AI 剧本创作工具是一款面向小说作者的智能改编助手，能将 3 章以上的小说文本自动转换为符合行业规范的结构化剧本（YAML 格式）。</p>
+      <div class="feature-blocks">
+        <div class="feature-block"><strong data-i18n="about.pipeline">8 阶段转换流水线</strong><span data-i18n="about.pipelineDesc">：加载 → 分析 → 场景提取 → 润色 → 组装 → 输出 → 校验 → 审核</span></div>
+        <div class="feature-block"><strong data-i18n="about.styles">10 种风格模板</strong><span data-i18n="about.stylesDesc">：每种风格有专属的分幕结构和 AI 分析策略</span></div>
+        <div class="feature-block"><strong data-i18n="about.modes">3 种改编模式</strong><span data-i18n="about.modesDesc">：快速出稿 / 精细打磨 / 混合协作</span></div>
+        <div class="feature-block"><strong data-i18n="about.review">6 维度质量审核</strong><span data-i18n="about.reviewDesc">：人物塑造 / 情节结构 / 对话质量 / 场景设计 / 情感张力 / 商业适配</span></div>
+        <div class="feature-block"><strong data-i18n="about.multiLang">多语言支持</strong><span data-i18n="about.multiLangDesc">：界面中英文切换，剧本输出中/英文可选</span></div>
+      </div>
+      <div class="tech-line">技术栈：Python 3.11+ / FastAPI / OpenAI 兼容 API / SQLite / YAML</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════
+     剧本阅读器 — 书本翻页
+     ═══════════════════════════════════════════════ -->
+<div id="script-reader" class="reader-overlay hidden">
+  <div class="reader-bg-decor"></div>
+  <div class="reader-topbar">
+    <div class="reader-title" id="reader-title"></div>
+    <div class="reader-controls">
+      <button id="reader-btn-prev" data-i18n="reader.prev">&#8592; 上一页</button>
+      <span class="reader-page-num" id="reader-page-num">1 / 1</span>
+      <button id="reader-btn-next" data-i18n="reader.next">下一页 &#8594;</button>
+      <button id="reader-btn-close" data-i18n="reader.close">关闭</button>
+    </div>
+  </div>
+  <div class="reader-stage">
+    <div class="reader-book" id="reader-book">
+      <div class="reader-spine"></div>
+      <div class="reader-page left" id="reader-left">
+        <div class="reader-page-content" id="reader-left-content"></div>
+      </div>
+      <div class="reader-page right" id="reader-right">
+        <div class="reader-page-content" id="reader-right-content"></div>
+      </div>
+    </div>
+  </div>
+  <div class="reader-shortcuts">← → 或 点击页面翻页</div>
+</div>
+
+<footer>
+  <span>AI 剧本创作工具 v1.0 &middot; 基于 OpenAI 兼容 API</span>
+</footer>
+
+<script src="/static/js/i18n.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

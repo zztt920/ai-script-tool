@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+
+# 数据库文件
+data/
+
+# 输出文件
+output/
+
+# 测试章节（小说原文）
+chapters/
+
+# 断点
+checkpoints/
+
+# 环境
+.env
+config.local.yaml
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
