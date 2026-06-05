@@ -3,6 +3,10 @@
 import os
 import json
 from typing import Any, Optional
+from adapter.logger import get_logger
+
+_log = get_logger("adapter.cache")
+
 
 try:
     import redis
@@ -17,6 +21,10 @@ class CacheAdapter:
     def __init__(self):
         self._client = None
         self._enabled = os.getenv("REDIS_ENABLED", "false").lower() == "true" and _HAS_REDIS
+        if self._enabled:
+            _log.info("Redis 缓存已启用")
+        else:
+            _log.info("Redis 缓存未启用（REDIS_ENABLED=false 或 redis 未安装）")
     
     def _get_client(self):
         if not self._client and self._enabled:
