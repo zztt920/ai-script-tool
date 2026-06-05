@@ -504,17 +504,25 @@ function _readerKeyHandler(e) {
   else if (e.key === 'Escape') { closeReader(); }
 }
 
-/* ── 翻页（transitionend 驱动，替代 setTimeout） ── */
+/* ── 翻页（transitionend 驱动 + 折叠阴影） ── */
 function readerNext() {
   if (_flipBusy || _readerCurrent >= _readerTotalSpreads - 1) return;
   _flipBusy = true;
 
   var page = document.getElementById('reader-right');
+  var leftPage = document.getElementById('reader-left');
+
+  // 左页接收右页翻转投射的阴影
+  leftPage.classList.add('shadow-receiving');
+
   var onEnd = function() {
     page.removeEventListener('transitionend', onEnd);
     _readerCurrent++;
     renderReaderSpread();
     page.classList.remove('flip-anim', 'flipping');
+    leftPage.classList.remove('shadow-receiving');
+    // 新渲染后清除可能的残留
+    document.getElementById('reader-left').classList.remove('shadow-receiving');
     _flipBusy = false;
   };
   page.addEventListener('transitionend', onEnd);
@@ -526,11 +534,19 @@ function readerPrev() {
   _flipBusy = true;
 
   var page = document.getElementById('reader-left');
+  var rightPage = document.getElementById('reader-right');
+
+  // 右页接收左页翻转投射的阴影
+  rightPage.classList.add('shadow-receiving');
+
   var onEnd = function() {
     page.removeEventListener('transitionend', onEnd);
     _readerCurrent--;
     renderReaderSpread();
     page.classList.remove('flip-anim', 'flipping');
+    rightPage.classList.remove('shadow-receiving');
+    // 新渲染后清除可能的残留
+    document.getElementById('reader-right').classList.remove('shadow-receiving');
     _flipBusy = false;
   };
   page.addEventListener('transitionend', onEnd);
@@ -660,8 +676,9 @@ function renderReaderSpread() {
   document.getElementById('reader-btn-prev').disabled = (_readerCurrent <= 0);
   document.getElementById('reader-btn-next').disabled = (_readerCurrent >= _readerTotalSpreads - 1);
 
-  // 点击右页翻页
+  // 点击右页向前翻，左页向后翻
   rightEl.onclick = function() { readerNext(); };
+  leftEl.onclick = function() { readerPrev(); };
 }
 
 /* ── 分页引擎 ──────────────────────────────── */

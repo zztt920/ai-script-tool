@@ -476,7 +476,7 @@ footer {
 .reader-stage {
   position: relative; z-index: 1; flex: 1; display: flex;
   align-items: center; justify-content: center;
-  perspective: 1600px;
+  perspective: 2200px;
   perspective-origin: 50% 40%;
 }
 .reader-book {
@@ -488,19 +488,20 @@ footer {
 
 /* 书脊 */
 .reader-spine {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 3px;
   transform: translateX(-50%);
-  background: linear-gradient(to right, rgba(0,0,0,.06), rgba(0,0,0,.02) 30%, rgba(0,0,0,.02) 70%, rgba(0,0,0,.06));
+  background: linear-gradient(to right,
+    rgba(0,0,0,.12), rgba(0,0,0,.04) 20%, rgba(0,0,0,0) 40%,
+    rgba(0,0,0,0) 60%, rgba(0,0,0,.04) 80%, rgba(0,0,0,.12));
   z-index: 5; pointer-events: none;
 }
 
 /* 书页双面 */
 .reader-page {
-  flex: 1; position: relative;
+  flex: 1; position: relative; overflow: hidden;
   background: #fefcf7; border: 1px solid #e0d8cc;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.03);
   min-height: 500px; padding: 48px 40px;
-  overflow-y: auto;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -508,50 +509,125 @@ footer {
   border-right: none;
   border-radius: 8px 0 0 8px;
   margin-right: 0;
+  /* 书页装订侧渐变 */
+  box-shadow: inset -12px 0 20px -12px rgba(0,0,0,.06),
+              0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
 }
 .reader-page.right {
   border-left: none;
   border-radius: 0 8px 8px 0;
   margin-left: 0;
+  /* 书页装订侧渐变 */
+  box-shadow: inset 12px 0 20px -12px rgba(0,0,0,.06),
+              0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
 }
 
-/* 翻页动画 — CSS 3D 优化版 */
+/* ── 折叠阴影层 ───────────────────────────────── */
+.reader-fold-crease {
+  position: absolute; top: 0; bottom: 0; z-index: 3;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.15s ease;
+}
+/* 左页折叠折痕（右边） */
+.reader-page.left .reader-fold-crease {
+  right: 0; width: 70px;
+  background: linear-gradient(to left,
+    rgba(0,0,0,0.22) 0%,
+    rgba(0,0,0,0.10) 25%,
+    rgba(0,0,0,0.03) 55%,
+    transparent 100%);
+}
+/* 右页折叠折痕（左边） */
+.reader-page.right .reader-fold-crease {
+  left: 0; width: 70px;
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.22) 0%,
+    rgba(0,0,0,0.10) 25%,
+    rgba(0,0,0,0.03) 55%,
+    transparent 100%);
+}
+
+/* ── 投射阴影层 ───────────────────────────────── */
+.reader-cast-shadow {
+  position: absolute; top: 0; bottom: 0; z-index: 2;
+  pointer-events: none; opacity: 0;
+  transition: opacity 0.15s ease;
+}
+/* 左页接收右侧翻页阴影 */
+.reader-page.left .reader-cast-shadow {
+  right: 0; width: 120px;
+  background: linear-gradient(to left,
+    rgba(0,0,0,0.14) 0%,
+    rgba(0,0,0,0.06) 35%,
+    transparent 100%);
+}
+/* 右页接收左侧翻页阴影 */
+.reader-page.right .reader-cast-shadow {
+  left: 0; width: 120px;
+  background: linear-gradient(to right,
+    rgba(0,0,0,0.14) 0%,
+    rgba(0,0,0,0.06) 35%,
+    transparent 100%);
+}
+
+/* 翻页时激活阴影 */
+.reader-page.right.flipping .reader-fold-crease,
+.reader-page.right.flipping .reader-cast-shadow,
+.reader-page.left.flipping .reader-fold-crease,
+.reader-page.left.flipping .reader-cast-shadow { opacity: 1; }
+.reader-page.left.shadow-receiving .reader-cast-shadow { opacity: 1; }
+
+/* 拖拽预览时激活折痕 */
+.reader-page.right.drag-preview .reader-fold-crease,
+.reader-page.left.drag-preview .reader-fold-crease { opacity: 1; }
+
+/* ═══════════════════════════════════════════
+   翻页动画 — 仿真实纸张折叠效果
+   ═══════════════════════════════════════════ */
 .reader-page.flip-anim {
-  transition: transform 0.42s cubic-bezier(0.22, 0.11, 0.14, 1);
+  transition: transform 0.5s cubic-bezier(0.45, 0.05, 0.15, 0.95);
   transform-style: preserve-3d;
   will-change: transform;
 }
 
-/* 向右翻页：右页绕左边缘旋转 170° */
+/* 向右翻：右页绕左边缘折叠 */
 .reader-page.right.flipping {
-  transform: rotateY(-170deg);
+  transform: rotateY(-175deg);
   transform-origin: left center;
-  box-shadow: -10px 0 30px rgba(0,0,0,0.12), 0 0 0 0 rgba(0,0,0,0);
+  box-shadow: -15px 0 35px rgba(0,0,0,0.18), 0 0 0 0 rgba(0,0,0,0);
 }
 
-/* 向左翻页：左页绕右边缘旋转 170° */
+/* 向左翻：左页绕右边缘折叠 */
 .reader-page.left.flipping {
-  transform: rotateY(170deg);
+  transform: rotateY(175deg);
   transform-origin: right center;
-  box-shadow: 10px 0 30px rgba(0,0,0,0.12);
+  box-shadow: 15px 0 35px rgba(0,0,0,0.18), 0 0 0 0 rgba(0,0,0,0);
 }
 
-/* 翻页阻力反馈 — 拖拽时预览旋转角度 */
+/* 拖拽预览 — 禁用过渡，CSS 变量驱动 */
 .reader-page.right.drag-preview {
   transition: none;
   transform: rotateY(calc(var(--drag-angle, 0) * 1deg));
   transform-origin: left center;
+  box-shadow: calc(var(--drag-angle, 0) * -0.08px) 0 25px rgba(0,0,0,0.15);
 }
 .reader-page.left.drag-preview {
   transition: none;
   transform: rotateY(calc(var(--drag-angle, 0) * 1deg));
   transform-origin: right center;
+  box-shadow: calc(var(--drag-angle, 0) * 0.08px) 0 25px rgba(0,0,0,0.15);
 }
 
-/* 翻页后阴影过渡 */
-.reader-page.flip-anim:not(.flipping) {
-  box-shadow: 0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
-  transition: transform 0.42s cubic-bezier(0.22, 0.11, 0.14, 1), box-shadow 0.42s cubic-bezier(0.22, 0.11, 0.14, 1);
+/* 翻页完成后恢复 */
+.reader-page.flip-anim:not(.flipping):not(.drag-preview) {
+  box-shadow: 0 0 0 1px rgba(0,0,0,.03);
+  transition: transform 0.5s cubic-bezier(0.45, 0.05, 0.15, 0.95), box-shadow 0.5s ease;
+}
+.reader-page.left.flip-anim:not(.flipping):not(.drag-preview) {
+  box-shadow: inset -12px 0 20px -12px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
+}
+.reader-page.right.flip-anim:not(.flipping):not(.drag-preview) {
+  box-shadow: inset 12px 0 20px -12px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
 }
 
 /* 页面内部排版 */
@@ -634,5 +710,6 @@ footer {
   .reader-spine { display: none; }
   .reader-page.right.flipping,
   .reader-page.left.flipping { transform: none; box-shadow: none; }
+  .reader-fold-crease, .reader-cast-shadow { display: none; }
   .reader-nav-hint { display: none; }
 }
