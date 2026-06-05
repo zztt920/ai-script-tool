@@ -7,6 +7,9 @@ dist/
 # 数据库文件
 data/
 
+# 日志文件
+logs/
+
 # 输出文件
 output/
 
