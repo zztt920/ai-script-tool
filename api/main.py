@@ -13,12 +13,16 @@ from fastapi.openapi.utils import get_openapi
 from db.database import init_db
 from api.routers import conversion, tasks, auth
 from api.errors import AppError
+from adapter.logger import api_logger
 
 # ── 生命周期 ──────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    api_logger.info("正在启动应用...")
     init_db()
+    api_logger.info("数据库初始化完成")
     yield
+    api_logger.info("应用已关闭")
 
 
 # ── 自定义 OpenAPI 配置 ──────────────────────────────
@@ -115,6 +119,7 @@ setup_ui(app)
 # ── 全局异常处理器 ────────────────────────────────
 @app.exception_handler(AppError)
 async def app_error_handler(_request: Request, exc: AppError):
+    api_logger.warning("应用异常 [%s]: %s", exc.error, exc.message)
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": exc.error, "message": exc.message, "code": exc.status_code},
@@ -123,6 +128,7 @@ async def app_error_handler(_request: Request, exc: AppError):
 
 @app.exception_handler(ValueError)
 async def value_error_handler(_request: Request, exc: ValueError):
+    api_logger.warning("参数校验失败: %s", exc)
     return JSONResponse(
         status_code=422,
         content={"error": "validation_error", "message": str(exc), "code": 422},
@@ -131,6 +137,7 @@ async def value_error_handler(_request: Request, exc: ValueError):
 
 @app.exception_handler(FileNotFoundError)
 async def not_found_handler(_request: Request, exc: FileNotFoundError):
+    api_logger.warning("文件未找到: %s", exc)
     return JSONResponse(
         status_code=404,
         content={"error": "not_found", "message": str(exc), "code": 404},
