@@ -187,6 +187,43 @@ def download_script(task_id: str):
     return PlainTextResponse(content, media_type="text/yaml")
 
 
+# ── 导出 JSON ─────────────────────────────────────
+@router.get("/{task_id}/script.json", response_description="剧本 JSON 内容")
+def download_script_json(task_id: str):
+    """导出剧本为 JSON 格式。"""
+    task = TaskRepository.get(task_id)
+    if not task:
+        raise AppError(404, "not_found", "任务不存在")
+    if task["status"] not in ("completed",):
+        raise AppError(409, "conflict", f"任务尚未完成（当前状态: {task['status']}）")
+    script = ScriptRepository.get_by_task(task_id)
+    if not script:
+        raise AppError(404, "not_found", "剧本不存在")
+    
+    import yaml
+    import json
+    from fastapi.responses import PlainTextResponse
+    
+    path = script.get("yaml_path", "")
+    if not path:
+        raise AppError(404, "not_found", "YAML 文件路径不存在")
+    p = Path(path)
+    if not p.exists():
+        raise AppError(404, "not_found", "YAML 文件已被删除")
+    
+    content = p.read_text(encoding="utf-8")
+    data = yaml.safe_load(content)
+    
+    # 根据语言配置翻译 key
+    cfg = json.loads(task.get("config", "{}"))
+    if cfg.get("language", "zh") == "zh":
+        from adapter.yaml_writer import _KEY_MAP_ZH, _translate_keys
+        data = _translate_keys(data, _KEY_MAP_ZH)
+    
+    json_content = json.dumps(data, ensure_ascii=False, indent=2)
+    return PlainTextResponse(json_content, media_type="application/json")
+
+
 # ── Schema 校验 ───────────────────────────────────
 @router.post("/{task_id}/validate", response_model=ValidationReportResponse)
 def validate_task_script(task_id: str):
