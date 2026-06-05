@@ -176,3 +176,16 @@ class UserResponse(BaseModel):
     status: str
     created_at: str
     last_login_at: Optional[str]
+
+
+# ── 批量操作模型 ──────────────────────────────────
+
+class BatchDeleteRequest(BaseModel):
+    """批量删除任务请求。"""
+    task_ids: list[str] = Field(..., min_length=1, max_length=100, description="待删除的任务 ID 列表")
+
+
+class BatchDeleteResponse(BaseModel):
+    """批量删除任务响应。"""
+    deleted_count: int
+    errors: list[str] = Field(default_factory=list)
