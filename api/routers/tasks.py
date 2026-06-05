@@ -12,6 +12,7 @@
 
 from fastapi import APIRouter, Query
 from pathlib import Path
+import os
 
 from api.schemas import (
     TaskStatusResponse, TaskListResponse, TaskProgress,
@@ -394,3 +395,54 @@ def batch_delete(request: BatchDeleteRequest):
         except Exception as e:
             errors.append(f"删除 {task_id} 失败: {str(e)}")
     return BatchDeleteResponse(deleted_count=deleted, errors=errors)
+
+
+# ── 剧本搜索 ──────────────────────────────────────
+@router.get("/search", response_description="搜索结果")
+def search_scripts(
+    q: str = Query(..., min_length=1, description="搜索关键词"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+):
+    """在已完成剧本中搜索关键词，返回匹配的任务列表。"""
+    import yaml
+    
+    result = TaskRepository.list(status="completed", page=1, page_size=10000)
+    matches = []
+    
+    for task in result["items"]:
+        script = ScriptRepository.get_by_task(task["id"])
+        if not script:
+            continue
+        path = script.get("yaml_path", "")
+        if not path:
+            continue
+        
+        p = Path(path)
+        if not p.exists():
+            continue
+        
+        try:
+            content = p.read_text(encoding="utf-8")
+            if q.lower() in content.lower():
+                matches.append({
+                    "task_id": task["id"],
+                    "title": task.get("title", ""),
+                    "status": task["status"],
+                    "created_at": task["created_at"],
+                    "matched": task.get("title", "") or os.path.basename(path),
+                })
+        except Exception:
+            continue
+    
+    # 分页
+    total = len(matches)
+    start = (page - 1) * page_size
+    end = start + page_size
+    return {
+        "query": q,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "results": matches[start:end],
+    }
