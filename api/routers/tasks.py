@@ -91,6 +91,27 @@ def list_tasks(
     return TaskListResponse(items=items, total=result["total"], page=result["page"], page_size=result["page_size"])
 
 
+# ── 仪表盘统计 ────────────────────────────────────
+@router.get("/stats", response_description="仪表盘统计信息")
+def get_stats():
+    """获取仪表盘聚合统计数据。"""
+    from db.database import get_connection
+    with get_connection() as conn:
+        total_tasks = conn.execute("SELECT COUNT(*) FROM task").fetchone()[0]
+        completed = conn.execute("SELECT COUNT(*) FROM task WHERE status='completed'").fetchone()[0]
+        processing = conn.execute("SELECT COUNT(*) FROM task WHERE status='processing'").fetchone()[0]
+        failed = conn.execute("SELECT COUNT(*) FROM task WHERE status='failed'").fetchone()[0]
+        pending = conn.execute("SELECT COUNT(*) FROM task WHERE status='pending'").fetchone()[0]
+        total_scenes = conn.execute("SELECT COALESCE(SUM(total_scenes), 0) FROM script").fetchone()[0]
+        total_beats = conn.execute("SELECT COALESCE(SUM(total_beats), 0) FROM script").fetchone()[0]
+        recent = conn.execute("SELECT COUNT(*) FROM script WHERE created_at >= datetime('now', '-7 days')").fetchone()[0]
+    
+    return {
+        "tasks": {"total": total_tasks, "completed": completed, "processing": processing, "failed": failed, "pending": pending},
+        "scripts": {"total_scenes": total_scenes or 0, "total_beats": total_beats or 0, "recent_7d": recent},
+    }
+
+
 # ── 风格列表（必须在 /{task_id} 之前注册）─────────
 @router.get("/styles", response_model=StylesResponse, tags=["Meta"])
 def list_styles():
