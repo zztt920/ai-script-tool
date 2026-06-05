@@ -7,8 +7,9 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 
 from db.database import init_db
 from api.routers import conversion, tasks, auth
@@ -26,14 +27,21 @@ async def lifespan(app: FastAPI):
     api_logger.info("应用已关闭")
 
 
-# ── 自定义 OpenAPI 配置 ──────────────────────────────
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-    openapi_schema = get_openapi(
-        title="AI 剧本创作工具 API",
+# ── 中/英 OpenAPI Schema 工厂 ───────────────────────
+def _build_openapi(title: str, desc: str) -> dict:
+    """构建 OpenAPI schema（标题和描述按语言区分）。"""
+    return get_openapi(
+        title=title,
         version="1.0.0",
-        description="""
+        description=desc,
+        routes=app.routes,
+    )
+
+
+_OPENAPI_ZH = None
+_OPENAPI_EN = None
+
+_OPENAPI_DESC_ZH = """
 # AI 剧本创作工具 API
 
 将小说章节自动转换为结构化 YAML 剧本的 RESTful API 服务。
@@ -75,18 +83,118 @@ python -m uvicorn api.main:app --reload
 | `/api/v1/tasks` | GET | 获取任务列表 |
 | `/api/v1/tasks/{task_id}` | GET | 获取任务详情 |
 | `/api/v1/tasks/{task_id}` | DELETE | 删除任务 |
-| `/api/v1/tasks/{task_id}/script` | GET | 获取剧本内容 |
-| `/api/v1/tasks/{task_id}/download` | GET | 下载剧本文件 |
+| `/api/v1/tasks/batch-delete` | POST | 批量删除任务 |
+| `/api/v1/tasks/stats` | GET | 仪表盘统计数据 |
+| `/api/v1/tasks/search` | GET | 剧本全文搜索 |
+| `/api/v1/tasks/styles` | GET | 风格模板列表 |
+| `/api/v1/tasks/{task_id}/script` | GET | 下载 YAML 剧本 |
+| `/api/v1/tasks/{task_id}/script.json` | GET | 导出 JSON 剧本 |
+"""
 
-## 访问文档
+_OPENAPI_DESC_EN = """
+# AI Script Creation Tool API
 
-- Swagger UI: `/docs`
-- ReDoc: `/redoc`
-        """,
-        routes=app.routes,
+RESTful API service that automatically converts novel chapters into structured YAML scripts.
+
+## Features
+
+- 📖 **Multi-format Support**: TXT, DOCX, PDF chapter files
+- 🤖 **AI-Powered**: Automated script generation via DeepSeek API
+- 🌐 **Multilingual**: Chinese/English output, localized YAML keys
+- 📊 **Real-time Progress**: Task status polling with live updates
+- 📱 **Responsive**: Mobile and desktop support
+
+## Tech Stack
+
+- FastAPI + Python 3.11+
+- SQLite Database
+- DeepSeek AI API
+- YAML Data Format
+
+## Quick Start
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env and add your DeepSeek API Key
+
+# Start server
+python -m uvicorn api.main:app --reload
+```
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/convert` | POST | Submit novel conversion task |
+| `/api/v1/tasks` | GET | List all tasks |
+| `/api/v1/tasks/{task_id}` | GET | Get task details |
+| `/api/v1/tasks/{task_id}` | DELETE | Delete a task |
+| `/api/v1/tasks/batch-delete` | POST | Batch delete tasks |
+| `/api/v1/tasks/stats` | GET | Dashboard statistics |
+| `/api/v1/tasks/search` | GET | Full-text script search |
+| `/api/v1/tasks/styles` | GET | Style template list |
+| `/api/v1/tasks/{task_id}/script` | GET | Download YAML script |
+| `/api/v1/tasks/{task_id}/script.json` | GET | Export JSON script |
+"""
+
+
+def openapi_zh():
+    global _OPENAPI_ZH
+    if _OPENAPI_ZH is None:
+        _OPENAPI_ZH = _build_openapi("AI 剧本创作工具 API", _OPENAPI_DESC_ZH)
+    return _OPENAPI_ZH
+
+
+def openapi_en():
+    global _OPENAPI_EN
+    if _OPENAPI_EN is None:
+        _OPENAPI_EN = _build_openapi("AI Script Creation Tool API", _OPENAPI_DESC_EN)
+    return _OPENAPI_EN
+
+
+# ── 中英双语言切换 Swagger UI HTML 模板 ──────────────
+_LANG_SWITCHER_JS = """
+<script>
+(function() {
+  var bar = document.createElement('div');
+  bar.style.cssText = 'position:fixed;top:12px;right:20px;z-index:9999;display:flex;gap:6px;';
+  var current = window.location.pathname.endsWith('/docs/en') ? 'en' : 'zh';
+  var langs = [
+    {code:'zh',label:'中文',href:'/docs',active:current==='zh'},
+    {code:'en',label:'English',href:'/docs/en',active:current==='en'}
+  ];
+  langs.forEach(function(l) {
+    var btn = document.createElement('a');
+    btn.href = l.href;
+    btn.textContent = l.label;
+    var isActive = l.active;
+    btn.style.cssText = 'padding:4px 12px;border-radius:4px;font-size:13px;font-family:-apple-system,sans-serif;text-decoration:none;' +
+      (isActive
+        ? 'background:#1b1b1b;color:#fff;font-weight:600;'
+        : 'background:#f0f0f0;color:#555;');
+    btn.onmouseenter = function() { if (!isActive) { btn.style.background='#e0e0e0'; } };
+    btn.onmouseleave = function() { if (!isActive) { btn.style.background='#f0f0f0'; } };
+    bar.appendChild(btn);
+  });
+  document.body.appendChild(bar);
+})();
+</script>
+"""
+
+
+def _swagger_html(openapi_url: str, title: str) -> str:
+    """返回注入语言切换按钮的 Swagger UI HTML。"""
+    html = get_swagger_ui_html(
+        openapi_url=openapi_url,
+        title=title,
+        swagger_js_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
+        swagger_css_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css",
     )
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+    return HTMLResponse(html.body.decode("utf-8").replace("</body>", _LANG_SWITCHER_JS + "</body>"))
 
 
 # ── 应用实例 ──────────────────────────────────────
@@ -95,11 +203,38 @@ app = FastAPI(
     version="1.0.0",
     description="将小说章节转换为结构化 YAML 剧本的 RESTful API",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None,     # 手动提供，支持中英双语
+    redoc_url=None,
+    openapi_url="/api/v1/openapi.json",
 )
 
-app.openapi = custom_openapi
+app.openapi = openapi_zh  # 默认中文
+
+
+# ── 自定义 Swagger UI 页面（中英双语）─────────────────
+@app.get("/docs", include_in_schema=False)
+async def swagger_zh():
+    return _swagger_html("/api/v1/openapi.json", "AI 剧本创作工具 API — 中文")
+
+
+@app.get("/docs/en", include_in_schema=False)
+async def swagger_en():
+    return _swagger_html("/api/v1/openapi.en.json", "AI Script Creation Tool API — English")
+
+
+@app.get("/redoc", include_in_schema=False)
+async def redoc_zh():
+    html = get_redoc_html(
+        openapi_url="/api/v1/openapi.json",
+        title="AI 剧本创作工具 API",
+        redoc_js_url="https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js",
+    )
+    return HTMLResponse(html.body.decode("utf-8"))
+
+
+@app.get("/api/v1/openapi.en.json", include_in_schema=False)
+async def get_openapi_en():
+    return JSONResponse(openapi_en())
 
 app.add_middleware(
     CORSMiddleware,
