@@ -9,7 +9,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.openapi.utils import get_openapi
-from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+from fastapi.openapi.docs import get_redoc_html
 
 from db.database import init_db
 from api.routers import conversion, tasks, auth
@@ -156,45 +156,69 @@ def openapi_en():
     return _OPENAPI_EN
 
 
-# ── 中英双语言切换 Swagger UI HTML 模板 ──────────────
-_LANG_SWITCHER_JS = """
-<script>
-(function() {
-  var bar = document.createElement('div');
-  bar.style.cssText = 'position:fixed;top:12px;right:20px;z-index:9999;display:flex;gap:6px;';
-  var current = window.location.pathname.endsWith('/docs/en') ? 'en' : 'zh';
-  var langs = [
-    {code:'zh',label:'中文',href:'/docs',active:current==='zh'},
-    {code:'en',label:'English',href:'/docs/en',active:current==='en'}
-  ];
-  langs.forEach(function(l) {
-    var btn = document.createElement('a');
-    btn.href = l.href;
-    btn.textContent = l.label;
-    var isActive = l.active;
-    btn.style.cssText = 'padding:4px 12px;border-radius:4px;font-size:13px;font-family:-apple-system,sans-serif;text-decoration:none;' +
-      (isActive
-        ? 'background:#1b1b1b;color:#fff;font-weight:600;'
-        : 'background:#f0f0f0;color:#555;');
-    btn.onmouseenter = function() { if (!isActive) { btn.style.background='#e0e0e0'; } };
-    btn.onmouseleave = function() { if (!isActive) { btn.style.background='#f0f0f0'; } };
-    bar.appendChild(btn);
-  });
-  document.body.appendChild(bar);
-})();
-</script>
-"""
+# ── 自定义 Swagger UI HTML 模板（带 locale 支持） ──────
+def _swagger_html(locale: str) -> str:
+    """返回完整的 Swagger UI HTML 页面，界面语言与 locale 匹配。
 
+    locale='zh' → 中文界面（按钮、提示均为中文）
+    locale='en' → 英文界面（按钮、提示均为英文）
+    """
+    openapi_url = "/api/v1/openapi.json" if locale == "zh" else "/api/v1/openapi.en.json"
+    title = "AI 剧本创作工具 API" if locale == "zh" else "AI Script Creation Tool API"
+    other_locale = "en" if locale == "zh" else "zh"
+    other_label = "English" if locale == "zh" else "中文"
+    other_href = "/docs/en" if locale == "zh" else "/docs"
+    current_label = "中文" if locale == "zh" else "English"
 
-def _swagger_html(openapi_url: str, title: str) -> str:
-    """返回注入语言切换按钮的 Swagger UI HTML。"""
-    html = get_swagger_ui_html(
-        openapi_url=openapi_url,
-        title=title,
-        swagger_js_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js",
-        swagger_css_url="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css",
-    )
-    return HTMLResponse(html.body.decode("utf-8").replace("</body>", _LANG_SWITCHER_JS + "</body>"))
+    return HTMLResponse(f"""<!DOCTYPE html>
+<html lang="{locale}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    html {{ box-sizing: border-box; overflow-y: scroll; }}
+    *, *::before, *::after {{ box-sizing: inherit; }}
+    body {{ margin: 0; background: #fafafa; }}
+    /* 语言切换器 */
+    .swagger-lang-bar {{
+      position: fixed; top: 12px; right: 20px; z-index: 9999;
+      display: flex; gap: 6px;
+    }}
+    .swagger-lang-bar a {{
+      padding: 4px 12px; border-radius: 4px; font-size: 13px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      text-decoration: none; transition: background 0.15s;
+    }}
+    .swagger-lang-bar a.active {{
+      background: #1b1b1b; color: #fff; font-weight: 600;
+    }}
+    .swagger-lang-bar a.inactive {{
+      background: #f0f0f0; color: #555;
+    }}
+    .swagger-lang-bar a.inactive:hover {{ background: #e0e0e0; }}
+  </style>
+</head>
+<body>
+  <div class="swagger-lang-bar">
+    <a class="{'active' if locale == 'zh' else 'inactive'}" href="/docs">中文</a>
+    <a class="{'active' if locale == 'en' else 'inactive'}" href="/docs/en">English</a>
+  </div>
+  <div id="swagger-ui"></div>
+  <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    SwaggerUIBundle({{
+      url: "{openapi_url}",
+      dom_id: "#swagger-ui",
+      presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
+      layout: "BaseLayout",
+      deepLinking: true,
+      locale: "{locale}",
+    }});
+  </script>
+</body>
+</html>""")
 
 
 # ── 应用实例 ──────────────────────────────────────
@@ -211,15 +235,15 @@ app = FastAPI(
 app.openapi = openapi_zh  # 默认中文
 
 
-# ── 自定义 Swagger UI 页面（中英双语）─────────────────
+# ── 自定义 Swagger UI 页面（中英双语，界面语言匹配）───
 @app.get("/docs", include_in_schema=False)
 async def swagger_zh():
-    return _swagger_html("/api/v1/openapi.json", "AI 剧本创作工具 API — 中文")
+    return _swagger_html("zh")
 
 
 @app.get("/docs/en", include_in_schema=False)
 async def swagger_en():
-    return _swagger_html("/api/v1/openapi.en.json", "AI Script Creation Tool API — English")
+    return _swagger_html("en")
 
 
 @app.get("/redoc", include_in_schema=False)
