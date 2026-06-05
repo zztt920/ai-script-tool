@@ -13,6 +13,7 @@ from fastapi.openapi.utils import get_openapi
 from db.database import init_db
 from api.routers import conversion, tasks, auth
 from api.errors import AppError
+from api.middleware import RequestLogMiddleware, RateLimitMiddleware
 from adapter.logger import api_logger
 
 # ── 生命周期 ──────────────────────────────────────
@@ -107,6 +108,16 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 请求限流（60 次/分钟）
+app.add_middleware(
+    RateLimitMiddleware,
+    max_requests=int(os.getenv("RATE_LIMIT_MAX", "60")),
+    window_seconds=int(os.getenv("RATE_LIMIT_WINDOW", "60")),
+)
+
+# 请求日志记录
+app.add_middleware(RequestLogMiddleware)
 
 app.include_router(conversion.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1")
