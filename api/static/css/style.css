@@ -501,7 +501,8 @@ footer {
   box-shadow: 0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
   min-height: 500px; padding: 48px 40px;
   overflow-y: auto;
-  transition: box-shadow .3s var(--ease);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .reader-page.left {
   border-right: none;
@@ -514,14 +515,43 @@ footer {
   margin-left: 0;
 }
 
-/* 翻页动画 — 使用 CSS 3D */
+/* 翻页动画 — CSS 3D 优化版 */
 .reader-page.flip-anim {
-  transition: transform .55s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.42s cubic-bezier(0.22, 0.11, 0.14, 1);
   transform-style: preserve-3d;
+  will-change: transform;
 }
+
+/* 向右翻页：右页绕左边缘旋转 170° */
 .reader-page.right.flipping {
-  transform: rotateY(-160deg);
+  transform: rotateY(-170deg);
   transform-origin: left center;
+  box-shadow: -10px 0 30px rgba(0,0,0,0.12), 0 0 0 0 rgba(0,0,0,0);
+}
+
+/* 向左翻页：左页绕右边缘旋转 170° */
+.reader-page.left.flipping {
+  transform: rotateY(170deg);
+  transform-origin: right center;
+  box-shadow: 10px 0 30px rgba(0,0,0,0.12);
+}
+
+/* 翻页阻力反馈 — 拖拽时预览旋转角度 */
+.reader-page.right.drag-preview {
+  transition: none;
+  transform: rotateY(calc(var(--drag-angle, 0) * 1deg));
+  transform-origin: left center;
+}
+.reader-page.left.drag-preview {
+  transition: none;
+  transform: rotateY(calc(var(--drag-angle, 0) * 1deg));
+  transform-origin: right center;
+}
+
+/* 翻页后阴影过渡 */
+.reader-page.flip-anim:not(.flipping) {
+  box-shadow: 0 0 0 1px rgba(0,0,0,.03), 0 2px 20px rgba(0,0,0,.06);
+  transition: transform 0.42s cubic-bezier(0.22, 0.11, 0.14, 1), box-shadow 0.42s cubic-bezier(0.22, 0.11, 0.14, 1);
 }
 
 /* 页面内部排版 */
@@ -602,6 +632,7 @@ footer {
   .reader-page { min-height: auto; padding: 28px 20px; border-radius: 8px; margin: 0 0 12px; }
   .reader-page.left, .reader-page.right { border: 1px solid #e0d8cc; border-radius: 8px; }
   .reader-spine { display: none; }
-  .reader-page.right.flipping { transform: none; }
+  .reader-page.right.flipping,
+  .reader-page.left.flipping { transform: none; box-shadow: none; }
   .reader-nav-hint { display: none; }
 }

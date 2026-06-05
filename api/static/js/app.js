@@ -455,6 +455,8 @@ var _readerData = null;   // 剧本 YAML 数据
 var _readerPages = [];    // 分页后的 HTML 内容
 var _readerCurrent = 0;   // 当前双页索引（每双页=2面）
 var _readerTotalSpreads = 0;
+var _flipBusy = false;    // 翻页动画进行中
+var _touchStartX = 0, _touchMoved = false;
 
 async function openReader(taskId) {
   try {
@@ -462,7 +464,6 @@ async function openReader(taskId) {
     if (!resp.ok) throw new Error('Fetch failed');
     var yamlText = await resp.text();
 
-    // 解析 YAML（简单行解析，不依赖 js-yaml 库）
     _readerData = parseSimpleYaml(yamlText);
     if (!_readerData) { toast('无法解析剧本', 'error'); return; }
 
@@ -480,8 +481,8 @@ async function openReader(taskId) {
     document.getElementById('script-reader').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    // 键盘事件
     document.addEventListener('keydown', _readerKeyHandler);
+    _initTouchDrag();
   } catch (e) {
     toast(t('toast.error') + ': ' + e.message, 'error');
   }
@@ -491,8 +492,10 @@ function closeReader() {
   document.getElementById('script-reader').classList.add('hidden');
   document.body.style.overflow = '';
   document.removeEventListener('keydown', _readerKeyHandler);
+  _cleanupTouchDrag();
   _readerData = null;
   _readerPages = [];
+  _flipBusy = false;
 }
 
 function _readerKeyHandler(e) {
@@ -501,22 +504,141 @@ function _readerKeyHandler(e) {
   else if (e.key === 'Escape') { closeReader(); }
 }
 
+/* ── 翻页（transitionend 驱动，替代 setTimeout） ── */
 function readerNext() {
-  if (_readerCurrent < _readerTotalSpreads - 1) {
-    var rightPage = document.getElementById('reader-right');
-    rightPage.classList.add('flip-anim', 'flipping');
-    setTimeout(function() {
-      _readerCurrent++;
-      renderReaderSpread();
-      rightPage.classList.remove('flip-anim', 'flipping');
-    }, 550);
-  }
+  if (_flipBusy || _readerCurrent >= _readerTotalSpreads - 1) return;
+  _flipBusy = true;
+
+  var page = document.getElementById('reader-right');
+  var onEnd = function() {
+    page.removeEventListener('transitionend', onEnd);
+    _readerCurrent++;
+    renderReaderSpread();
+    page.classList.remove('flip-anim', 'flipping');
+    _flipBusy = false;
+  };
+  page.addEventListener('transitionend', onEnd);
+  page.classList.add('flip-anim', 'flipping');
 }
 
 function readerPrev() {
-  if (_readerCurrent > 0) {
+  if (_flipBusy || _readerCurrent <= 0) return;
+  _flipBusy = true;
+
+  var page = document.getElementById('reader-left');
+  var onEnd = function() {
+    page.removeEventListener('transitionend', onEnd);
     _readerCurrent--;
     renderReaderSpread();
+    page.classList.remove('flip-anim', 'flipping');
+    _flipBusy = false;
+  };
+  page.addEventListener('transitionend', onEnd);
+  page.classList.add('flip-anim', 'flipping');
+}
+
+/* ── 触摸 / 鼠标拖拽翻页 ── */
+function _initTouchDrag() {
+  var stage = document.querySelector('.reader-stage');
+  if (!stage) return;
+  stage.addEventListener('touchstart', _onTouchStart, {passive: true});
+  stage.addEventListener('touchmove', _onTouchMove, {passive: true});
+  stage.addEventListener('touchend', _onTouchEnd);
+  stage.addEventListener('mousedown', _onMouseDown);
+  stage.addEventListener('mouseup', _onMouseUp);
+  document.addEventListener('mousemove', _onMouseMove);
+}
+
+function _cleanupTouchDrag() {
+  var stage = document.querySelector('.reader-stage');
+  if (!stage) return;
+  stage.removeEventListener('touchstart', _onTouchStart);
+  stage.removeEventListener('touchmove', _onTouchMove);
+  stage.removeEventListener('touchend', _onTouchEnd);
+  stage.removeEventListener('mousedown', _onMouseDown);
+  stage.removeEventListener('mouseup', _onMouseUp);
+  document.removeEventListener('mousemove', _onMouseMove);
+  _resetDragPreview();
+}
+
+var _dragTarget = null, _dragStartX = 0, _dragMaxAngle = 0;
+
+function _resetDragPreview() {
+  if (_dragTarget) {
+    _dragTarget.classList.remove('drag-preview', 'flip-anim');
+    _dragTarget.style.removeProperty('--drag-angle');
+    _dragTarget = null;
+  }
+}
+
+function _onTouchStart(e) {
+  _touchStartX = e.touches[0].clientX;
+  _touchMoved = false;
+}
+
+function _onTouchMove(e) {
+  if (_flipBusy) return;
+  var dx = _touchStartX - e.touches[0].clientX;
+  if (Math.abs(dx) > 8) _touchMoved = true;
+  // 实时拖拽反馈
+  _applyDragPreview(dx);
+}
+
+function _onTouchEnd(e) {
+  _resetDragPreview();
+  if (!_touchMoved || _flipBusy) return;
+  var dx = _touchStartX - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 50) {
+    if (dx > 0) readerNext();
+    else readerPrev();
+  }
+}
+
+function _onMouseDown(e) {
+  if (_flipBusy) return;
+  _dragStartX = e.clientX;
+}
+
+var _mouseDragActive = false;
+function _onMouseMove(e) {
+  if (_flipBusy || e.buttons !== 1) return;
+  if (!_mouseDragActive && Math.abs(e.clientX - _dragStartX) > 5) _mouseDragActive = true;
+  if (_mouseDragActive) {
+    _applyDragPreview(_dragStartX - e.clientX);
+  }
+}
+
+function _onMouseUp(e) {
+  var wasDrag = _mouseDragActive;
+  _mouseDragActive = false;
+  _resetDragPreview();
+  if (!wasDrag || _flipBusy) return;
+  var dx = _dragStartX - e.clientX;
+  if (Math.abs(dx) > 50) {
+    if (dx > 0) readerNext();
+    else readerPrev();
+  }
+}
+
+/* 拖拽实时预览 — 页面角度随手指移动 */
+function _applyDragPreview(dx) {
+  var maxAngle = Math.min(Math.abs(dx) / 1.5, 90); // 最大 90°
+  var angle = dx > 0 ? -maxAngle : maxAngle; // 右拖→右翻（负角），左拖→左翻（正角）
+
+  var page;
+  if (dx > 0 && _readerCurrent < _readerTotalSpreads - 1) {
+    page = document.getElementById('reader-right');
+  } else if (dx < 0 && _readerCurrent > 0) {
+    page = document.getElementById('reader-left');
+  }
+
+  if (page && page !== _dragTarget) {
+    _resetDragPreview();
+    _dragTarget = page;
+    page.classList.add('drag-preview', 'flip-anim');
+  }
+  if (page) {
+    page.style.setProperty('--drag-angle', angle);
   }
 }
 
