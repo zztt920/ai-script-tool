@@ -17,6 +17,81 @@ from domain.enums import (
 log = logging.getLogger("domain.validator")
 ISO8601_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}")
 
+# ── 中→英 key 映射表（用于校验中文 YAML 输出） ──────
+_CN_TO_EN = {
+    # 顶层
+    "元信息": "meta", "角色列表": "characters",
+    "分幕结构": "acts", "场景列表": "scenes",
+    # meta 层
+    "剧本标题": "script_title", "原著名称": "original_novel",
+    "原著作者": "original_author", "改编工具": "adapter",
+    "剧本版本": "script_version", "创建时间": "created_at",
+    "更新时间": "updated_at", "类型标签": "genre",
+    "剧本类型": "script_type", "场景总数": "total_scenes",
+    "总集数": "total_episodes", "故事梗概": "synopsis",
+    "主题关键词": "theme_keywords", "改编说明": "adaptation_notes",
+    # 角色层
+    "角色": "characters", "角色ID": "character_id", "姓名": "name",
+    "角色类型": "role_type", "性别": "gender", "年龄段": "age_range",
+    "性格特征": "personality_traits", "背景故事": "background",
+    "核心动机": "motivation", "角色弧光": "arc_summary",
+    "语言风格": "speech_style", "隐藏秘密": "secrets",
+    "角色关系": "relationships", "关系类型": "relation_type",
+    "关联角色ID": "target_character_id", "冲突等级": "conflict_level",
+    "关系弧线": "relationship_arc", "首次出场场景": "first_appearance_scene",
+    # 场景层
+    "场景编号": "scene_id", "场景标题": "scene_heading",
+    "内外景": "interior_exterior", "地点": "location",
+    "时间": "time", "时代背景": "time_period",
+    "场景概要": "summary", "场景功能": "scene_function",
+    "情感基调": "emotional_tone", "紧张度": "tension_level",
+    "出场角色": "characters_present", "道具": "props",
+    "节拍": "beats", "转场": "transition", "预计时长": "estimated_duration",
+    "备注": "notes",
+    # 节拍层
+    "节拍编号": "beat_id", "节拍类型": "beat_type",
+    "内容": "content", "潜台词": "subtext",
+    "情绪": "emotion", "动作指示": "parenthetical",
+    "时长提示": "duration_hint", "镜头提示": "camera_hint",
+    # 幕层
+    "幕序号": "act_number", "幕标题": "title",
+    "叙事功能": "narrative_function",
+    "场景范围": "scene_range",
+    "起始场景": "start", "结束场景": "end",
+    "关键转折": "key_turning_points",
+    # 其他
+    "说话角色": "character_id", "描述": "description",
+    "重要度": "importance", "职业": "occupation",
+    "外貌特征": "physical_description",
+    "修改场景": "changed_scenes",
+    "导出信息": "export_info", "文件版本": "file_version",
+    "校验状态": "validation_status",
+}
+
+
+def _normalize_keys(obj):
+    """将中文字段名递归转换为英文字段名（原地修改）。"""
+    if isinstance(obj, dict):
+        # 先收集需要重命名的 key
+        rename = {}
+        for k in list(obj.keys()):
+            if k in _CN_TO_EN:
+                rename[k] = _CN_TO_EN[k]
+        for cn_k, en_k in rename.items():
+            obj[en_k] = obj.pop(cn_k)
+        # 递归处理值
+        for v in obj.values():
+            _normalize_keys(v)
+    elif isinstance(obj, list):
+        for item in obj:
+            _normalize_keys(item)
+    return obj
+
+
+def _is_chinese_keys(script: dict) -> bool:
+    """检测顶层是否使用中文 key。"""
+    return any(k in script for k in ("元信息", "角色列表", "分幕结构", "场景列表"))
+
 
 class ValidationReport:
     """收集校验问题和统计信息。"""
@@ -77,6 +152,9 @@ class ScriptSchemaValidator:
         if not isinstance(script, dict):
             self.report.error("根节点必须是一个字典。")
             return self.report
+        # 中文 key 自动转换为英文 key（兼容中文输出模式）
+        if _is_chinese_keys(script):
+            _normalize_keys(script)
         self._validate(script)
         return self.report
 
@@ -85,6 +163,8 @@ class ScriptSchemaValidator:
         if not isinstance(script, dict):
             self.report.error("根节点必须是一个字典。")
             return self.report
+        if _is_chinese_keys(script):
+            _normalize_keys(script)
         self._validate(script)
         return self.report
 
