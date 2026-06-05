@@ -15,7 +15,10 @@ def get_connection(db_path: str = None):
     Path(path).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA journal_mode=WAL")
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+    except sqlite3.OperationalError:
+        pass  # WAL 模式在某些 Windows 环境下不可用，回退到默认
     conn.execute("PRAGMA foreign_keys=ON")
     try:
         yield conn
